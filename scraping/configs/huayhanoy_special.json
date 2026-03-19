@@ -1,0 +1,49 @@
+﻿{
+  "source_code": "huayhanoy_special",
+  "source_url": "https://exphuay.com/result/xsthm",
+  "source_url_template": "https://exphuay.com/result/xsthm?date={draw_date}",
+  "headers": {
+    "User-Agent": "lottery-platform/0.1"
+  },
+  "draw_date": {
+    "source": "page_regex",
+    "pattern": "งวดวันที่\\s+([0-9]{1,2}\\s+[^\\s]+\\s+[0-9]{4})",
+    "format": "thai_text",
+    "override_input": true
+  },
+  "extraction": {
+    "mode": "ordered_values",
+    "start_marker": "ผลรางวัล",
+    "end_marker": "คำนวณ",
+    "value_pattern": "^[0-9]+$"
+  },
+  "reward_definitions": [
+    {
+      "reward_type": "full_result",
+      "aliases": [
+        "ผลรางวัล"
+      ],
+      "digit_length": 5,
+      "expected_count": 1,
+      "required": true
+    },
+    {
+      "reward_type": "top_3_digits",
+      "aliases": [
+        "3 ตัวบน"
+      ],
+      "digit_length": 3,
+      "expected_count": 1,
+      "required": true
+    },
+    {
+      "reward_type": "bottom_2_digits",
+      "aliases": [
+        "2 ตัวล่าง"
+      ],
+      "digit_length": 2,
+      "expected_count": 1,
+      "required": true
+    }
+  ]
+}
