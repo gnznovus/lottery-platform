@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Git
+.git/
+
+# Env
+.env
+.venv/
+venv/
+
+# Local artifacts
+staticfiles/
+media/

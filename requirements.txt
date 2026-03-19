@@ -1,0 +1,6 @@
+Django==6.0.3
+djangorestframework==3.17.0
+psycopg[binary]==3.3.3
+python-dotenv==1.2.2
+requests==2.32.5
+beautifulsoup4==4.14.2

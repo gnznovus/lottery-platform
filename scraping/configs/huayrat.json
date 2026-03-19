@@ -1,0 +1,116 @@
+{
+  "source_code": "huayrat",
+  "source_url_template": "https://news.sanook.com/lotto/check/{draw_date_thai_compact}/",
+  "default_date": {
+    "strategy": "monthly_fixed_dates",
+    "days": [
+      1,
+      16
+    ]
+  },
+  "headers": {
+    "User-Agent": "lottery-platform/0.1"
+  },
+  "draw_date": {
+    "source": "url_regex",
+    "pattern": "/check/(\\d+)/"
+  },
+  "extraction": {
+    "mode": "document_lines",
+    "start_marker": "รางวัลที่ 1",
+    "end_marker": "ตรวจหวยย้อนหลัง"
+  },
+  "reward_definitions": [
+    {
+      "reward_type": "first_prize",
+      "label": "รางวัลที่ 1",
+      "aliases": [
+        "รางวัลที่ 1"
+      ],
+      "digit_length": 6,
+      "expected_count": 1,
+      "required": true
+    },
+    {
+      "reward_type": "front_3_digits",
+      "label": "เลขหน้า 3 ตัว",
+      "aliases": [
+        "เลขหน้า 3 ตัว"
+      ],
+      "digit_length": 3,
+      "expected_count": 2,
+      "required": true
+    },
+    {
+      "reward_type": "back_3_digits",
+      "label": "เลขท้าย 3 ตัว",
+      "aliases": [
+        "เลขท้าย 3 ตัว"
+      ],
+      "digit_length": 3,
+      "expected_count": 2,
+      "required": true
+    },
+    {
+      "reward_type": "last_2_digits",
+      "label": "เลขท้าย 2 ตัว",
+      "aliases": [
+        "เลขท้าย 2 ตัว"
+      ],
+      "digit_length": 2,
+      "expected_count": 1,
+      "required": true
+    },
+    {
+      "reward_type": "near_first_prize",
+      "label": "รางวัลข้างเคียงรางวัลที่ 1",
+      "aliases": [
+        "รางวัลข้างเคียงรางวัลที่ 1"
+      ],
+      "digit_length": 6,
+      "expected_count": 2,
+      "required": true
+    },
+    {
+      "reward_type": "prize_2",
+      "label": "รางวัลที่ 2",
+      "aliases": [
+        "รางวัลที่ 2"
+      ],
+      "digit_length": 6,
+      "expected_count": 5,
+      "required": true
+    },
+    {
+      "reward_type": "prize_3",
+      "label": "รางวัลที่ 3",
+      "aliases": [
+        "รางวัลที่ 3"
+      ],
+      "digit_length": 6,
+      "expected_count": 10,
+      "required": true
+    },
+    {
+      "reward_type": "prize_4",
+      "label": "รางวัลที่ 4",
+      "aliases": [
+        "รางวัลที่ 4"
+      ],
+      "digit_length": 6,
+      "expected_count": 50,
+      "required": true
+    },
+    {
+      "reward_type": "prize_5",
+      "label": "รางวัลที่ 5",
+      "aliases": [
+        "รางวัลที่ 5"
+      ],
+      "digit_length": 6,
+      "expected_count": 100,
+      "required": true
+    }
+  ],
+  "report_resolved_other_date": true
+}
