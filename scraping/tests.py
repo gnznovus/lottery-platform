@@ -10,6 +10,7 @@ from ops.models import ScrapeRun
 from results.models import DrawResult, RewardType
 from scraping.config_loader import load_source_config
 from scraping.services import run_configured_scrape
+from scraping.types import ExtractedField, ScrapePayload
 from scraping.validators import ValidationError
 from sources.models import LotterySource
 
@@ -236,3 +237,35 @@ class ScrapeCommandTests(TestCase):
 
         self.assertIn('"status": "not_found"', stdout.getvalue())
         self.assertIn('"requested_draw_date": "2026-03-10"', stdout.getvalue())
+
+    def _mock_payload(self):
+        return ScrapePayload(
+            source_code="huaylao",
+            source_name="Huay Lao",
+            draw_date="2026-03-17",
+            fetched_url="https://exphuay.com/result/laosdevelops?date=2026-03-18",
+            extracted_fields=[
+                ExtractedField(reward_type="full_result", raw_label="????????", values=["504329"]),
+                ExtractedField(reward_type="top_3_digits", raw_label="3 ?????", values=["329"]),
+                ExtractedField(reward_type="bottom_2_digits", raw_label="2 ???????", values=["43"]),
+            ],
+            raw_html=HUAYLAO_SIMPLE_HTML,
+        )
+
+    def test_scrape_command_persists_by_default(self):
+        with patch("scraping.management.commands.scrape.run_configured_scrape") as mocked_run:
+            mocked_run.return_value = self._mock_payload()
+
+            stdout = StringIO()
+            call_command("scrape", "huaylao", "--date", "2026-03-18", stdout=stdout)
+
+        self.assertTrue(mocked_run.call_args.kwargs["persist"])
+
+    def test_scrape_command_supports_no_persist(self):
+        with patch("scraping.management.commands.scrape.run_configured_scrape") as mocked_run:
+            mocked_run.return_value = self._mock_payload()
+
+            stdout = StringIO()
+            call_command("scrape", "huaylao", "--date", "2026-03-18", "--no-persist", stdout=stdout)
+
+        self.assertFalse(mocked_run.call_args.kwargs["persist"])

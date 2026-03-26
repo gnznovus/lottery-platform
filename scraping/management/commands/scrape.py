@@ -18,6 +18,8 @@ class Command(BaseCommand):
         parser.add_argument("source_code")
         parser.add_argument("--date", dest="draw_date")
         parser.add_argument("--persist", action="store_true", dest="persist")
+        parser.add_argument("--no-persist", action="store_false", dest="persist")
+        parser.set_defaults(persist=True)
 
     def _previous_month(self, value: date) -> date:
         first_of_month = value.replace(day=1)

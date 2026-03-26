@@ -172,16 +172,16 @@ Run schedule sync:
 docker compose exec web python manage.py resolve_draw_events --source huayrat --start-date 2026-03-01 --end-date 2026-03-31
 ```
 
-Run one scraper:
+Run one scraper and persist by default:
 
 ```powershell
 docker compose exec web python manage.py scrape huaylao
 ```
 
-Persist scraped results:
+Run without writing new draw/result rows:
 
 ```powershell
-docker compose exec web python manage.py scrape huaylao --persist
+docker compose exec web python manage.py scrape huaylao --no-persist
 ```
 
 ## API
