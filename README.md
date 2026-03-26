@@ -237,6 +237,21 @@ Current defaults:
 - app timezone: `Asia/Bangkok`
 - database host in Docker: `db`
 
+## Future Database Migration
+
+The project already targets PostgreSQL, so moving from the local Docker database to a real PostgreSQL server later should be a configuration change, not an application rewrite.
+
+Expected migration path:
+- keep Django models and migrations unchanged
+- point `.env` to the real PostgreSQL host, port, database, user, and password
+- run `python manage.py migrate` against the new database
+- export/import existing data only if local history needs to be preserved
+- add backup, credentials, and network rules at deployment time
+
+Current decision:
+- stay on Docker PostgreSQL for local development
+- delay external PostgreSQL integration until the project actually needs live operation again
+
 ## Status
 
 This project is past scaffold stage.
