@@ -1,7 +1,8 @@
-﻿from django.urls import path
+from django.urls import path
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .permissions import ApiKeyPermission
 from .views import (
     DrawEventDetailView,
     DrawEventListView,
@@ -9,6 +10,7 @@ from .views import (
     DrawResultListView,
     ScrapeRunDetailView,
     ScrapeRunListView,
+    SearchResultsView,
     SourceDetailView,
     SourceLatestResultsView,
     SourceListView,
@@ -17,7 +19,7 @@ from .views import (
 
 
 class ApiRootView(APIView):
-    permission_classes = []
+    permission_classes = [ApiKeyPermission]
     authentication_classes = []
 
     def get(self, _request):
@@ -36,6 +38,7 @@ class ApiRootView(APIView):
                     "results": "/api/results/",
                     "scrape_runs": "/api/scrape-runs/",
                     "scrape_run_detail": "/api/scrape-runs/<id>/",
+                    "search": "/api/search/?source=<code>&draw_date=YYYY-MM-DD&number=123456",
                 },
             }
         )
@@ -53,4 +56,5 @@ urlpatterns = [
     path("results/", DrawResultListView.as_view(), name="draw-result-list"),
     path("scrape-runs/", ScrapeRunListView.as_view(), name="scrape-run-list"),
     path("scrape-runs/<int:pk>/", ScrapeRunDetailView.as_view(), name="scrape-run-detail"),
+    path("search/", SearchResultsView.as_view(), name="search-results"),
 ]

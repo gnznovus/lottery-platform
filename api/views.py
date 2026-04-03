@@ -1,9 +1,10 @@
-﻿from django.db.models import Count
+from datetime import date
+
+from django.db.models import Count
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,6 +13,7 @@ from ops.models import ScrapeRun
 from results.models import DrawResult
 from sources.models import LotterySource
 
+from .permissions import ApiKeyPermission
 from .serializers import (
     DrawEventSerializer,
     DrawResultSerializer,
@@ -23,7 +25,7 @@ from .serializers import (
 
 
 class PublicReadOnlyViewMixin:
-    permission_classes = [AllowAny]
+    permission_classes = [ApiKeyPermission]
     authentication_classes = []
 
 
@@ -209,3 +211,111 @@ class SourcesLatestResultsView(PublicReadOnlyViewMixin, APIView):
 
         serializer = SourceLatestSummarySerializer(items, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+
+class SearchResultsView(PublicReadOnlyViewMixin, APIView):
+    def get(self, request):
+        source_code = (request.query_params.get("source") or "").strip()
+        draw_date = (request.query_params.get("draw_date") or "").strip()
+        number = (request.query_params.get("number") or "").strip()
+
+        if not source_code or not draw_date or not number:
+            return Response(
+                {"detail": "source, draw_date, and number are required."},
+                status=400,
+            )
+
+        if not number.isdigit() or len(number) != 6:
+            return Response(
+                {"detail": "number must be a 6-digit string."},
+                status=400,
+            )
+
+        try:
+            parsed_date = date.fromisoformat(draw_date)
+        except ValueError:
+            return Response(
+                {"detail": "draw_date must be YYYY-MM-DD."},
+                status=400,
+            )
+
+        try:
+            source = LotterySource.objects.get(code=source_code)
+        except LotterySource.DoesNotExist as exc:
+            raise Http404("Source not found") from exc
+
+        draw_event = (
+            DrawEvent.objects.select_related("source")
+            .annotate(match_date=Coalesce("resolved_date", "scheduled_date"))
+            .filter(source=source, status=DrawEvent.Status.COMPLETED, match_date=parsed_date)
+            .order_by("-id")
+            .first()
+        )
+        if draw_event is None:
+            raise Http404("No completed draw event found for date")
+
+        front_three = number[:3]
+        back_three = number[-3:]
+        last_two = number[-2:]
+
+        full_match_codes = {
+            "first_prize",
+            "near_first_prize",
+            "prize_2",
+            "prize_3",
+            "prize_4",
+            "prize_5",
+            "full_result",
+        }
+        front_three_codes = {"front_3_digits", "top_3_digits"}
+        back_three_codes = {"back_3_digits"}
+        last_two_codes = {"last_2_digits", "bottom_2_digits"}
+        known_codes = full_match_codes | front_three_codes | back_three_codes | last_two_codes
+
+        results_qs = (
+            DrawResult.objects.select_related("draw_event__source", "reward_type")
+            .filter(draw_event=draw_event)
+            .order_by("reward_type__sort_order", "sequence", "id")
+        )
+
+        matches = []
+        for result in results_qs:
+            value = (result.value or "").strip()
+            if not value:
+                continue
+            code = result.reward_type.code
+
+            if code in front_three_codes and value == front_three:
+                matches.append(result)
+                continue
+            if code in back_three_codes and value == back_three:
+                matches.append(result)
+                continue
+            if code in last_two_codes and value == last_two:
+                matches.append(result)
+                continue
+            if code in full_match_codes and value == number:
+                matches.append(result)
+                continue
+
+            # Fallback for unknown reward types based on value length.
+            if code not in known_codes:
+                if len(value) == 6 and value == number:
+                    matches.append(result)
+                elif len(value) == 3 and value == back_three:
+                    matches.append(result)
+                elif len(value) == 2 and value == last_two:
+                    matches.append(result)
+
+        serializer = DrawResultSerializer(matches, many=True)
+        return Response(
+            {
+                "source_code": source.code,
+                "source_name": source.name,
+                "draw_event_id": draw_event.id,
+                "draw_date": str(draw_event.resolved_date or draw_event.scheduled_date),
+                "number": number,
+                "matches": serializer.data,
+            }
+        )
+

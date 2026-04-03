@@ -198,6 +198,14 @@ Current public read endpoints:
 - `GET /api/results/`
 - `GET /api/scrape-runs/`
 - `GET /api/scrape-runs/<id>/`
+- `GET /api/search/?source=<code>&draw_date=YYYY-MM-DD&number=123456`
+
+Search matching rules:
+- `front_3_digits` / `top_3_digits` -> first 3 digits
+- `back_3_digits` -> last 3 digits
+- `last_2_digits` / `bottom_2_digits` -> last 2 digits
+- `first_prize`, `near_first_prize`, `prize_2-5`, `full_result` -> full 6 digits
+- Fallback: unknown reward types match by value length (6/3/2 digits)
 
 Examples:
 
@@ -206,10 +214,10 @@ Examples:
 /api/sources/results/latest/?sources=huaylao,huaymaley
 /api/results/?source=huayrat&reward_type=first_prize
 /api/draw-events/?source=huaylao&status=completed
+/api/search/?source=huayrat&draw_date=2026-03-16&number=510439
 ```
 
 List endpoints are paginated.
-
 ## Admin
 
 Django admin is used as the internal back office.
